@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="classic">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agenda Escolar por Asignaturas</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700&family=Press+Start+2P&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* VARIABLES DE TEMAS CSS */
+    :root[data-theme="classic"] {
+      --bg-body: #f3f4f6;
+      --bg-card: #ffffff;
+      --bg-header: #ffffff;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --border-color: #e5e7eb;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --accent: #3b82f6;
+      --font-family: 'Inter', sans-serif;
+      --shadow-style: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --radius: 0.75rem;
+      --badge-completed: #10b981;
+    }
+
+    :root[data-theme="neon"] {
+      --bg-body: #0a0e17;
+      --bg-card: #121824;
+      --bg-header: #121824;
+      --text-main: #00f0ff;
+      --text-muted: #8a99ad;
+      --border-color: #ff007f;
+      --primary: #ff007f;
+      --primary-hover: #e0006f;
+      --primary-light: rgba(255, 0, 127, 0.15);
+      --accent: #00f0ff;
+      --font-family: 'Outfit', sans-serif;
+      --shadow-style: 0 0 15px rgba(255, 0, 127, 0.3), 0 0 5px rgba(0, 240, 255, 0.2);
+      --radius: 0.5rem;
+      --badge-completed: #00ff66;
+    }
+
+    :root[data-theme="retro"] {
+      --bg-body: #f4ebd9;
+      --bg-card: #fffdf5;
+      --bg-header: #e8dbbf;
+      --text-main: #2b261f;
+      --text-muted: #736959;
+      --border-color: #2b261f;
+      --primary: #d9534f;
+      --primary-hover: #c9302c;
+      --primary-light: #f9ebea;
+      --accent: #f0ad4e;
+      --font-family: 'Fira Code', monospace;
+      --shadow-style: 4px 4px 0px #2b261f;
+      --radius: 0.25rem;
+      --badge-completed: #5cb85c;
+    }
+
+    :root[data-theme="dark"] {
+      --bg-body: #0f172a;
+      --bg-card: #1e293b;
+      --bg-header: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-light: rgba(99, 102, 241, 0.2);
+      --accent: #818cf8;
+      --font-family: 'Inter', sans-serif;
+      --shadow-style: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+      --radius: 0.75rem;
+      --badge-completed: #34d399;
+    }
+
+    body {
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      font-family: var(--font-family);
+      transition: background-color 0.3s ease, color 0.3s ease;
+      min-height: 100vh;
+    }
+
+    .theme-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-style);
+      border-radius: var(--radius);
+      transition: all 0.2s ease-in-out;
+    }
+
+    .theme-header {
+      background-color: var(--bg-header);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .theme-btn-primary {
+      background-color: var(--primary);
+      color: #ffffff;
+      border-radius: var(--radius);
+      transition: all 0.2s ease;
+    }
+    .theme-btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    :root[data-theme="retro"] .theme-btn-primary {
+      border: 2px solid #2b261f;
+      box-shadow: 2px 2px 0px #2b261f;
+      color: #fff;
+    }
+
+    :root[data-theme="neon"] .theme-card {
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.1), inset 0 0 10px rgba(255, 0, 127, 0.05);
+    }
+    :root[data-theme="neon"] .theme-card:hover {
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.3), 0 0 20px rgba(255, 0, 127, 0.2);
+    }
+
+    .page-view {
+      display: none;
+    }
+    .page-view.active {
+      display: block;
+      animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Custom Input styling for cohesive themes */
+    .theme-input {
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+    }
+    .theme-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-light);
+    }
+  </style>
+</head>
+<body class="pb-12">
+
+  <!-- ENCABEZADO Y SELECTOR DE TEMAS -->
+  <header class="theme-header sticky top-0 z-30 shadow-sm mb-6 transition-colors duration-300">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="p-2.5 rounded-lg text-white" style="background-color: var(--primary)">
+          <i class="fa-solid fa-graduation-cap text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight">Agenda Escolar</h1>
+          <p class="text-xs opacity-75">Gestión de Tareas por Asignaturas</p>
+        </div>
+      </div>
+
+      <!-- Selector de Temas Visuales -->
+      <div class="flex items-center space-x-2">
+        <label for="themeSelector" class="text-xs font-semibold uppercase tracking-wider hidden sm:inline-block">
+          <i class="fa-solid fa-palette mr-1"></i>Tema:
+        </label>
+        <select id="themeSelector" onchange="changeTheme(this.value)" class="theme-input px-3 py-1.5 text-sm font-medium cursor-pointer">
+          <option value="classic">🏛️ Clásico / Minimalista</option>
+          <option value="neon">⚡ Neón / Cyberpunk</option>
+          <option value="retro">🕹️ Retro / Vintage</option>
+          <option value="dark">🌙 Oscuro Elegante</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="max-w-6xl mx-auto px-4">
+
+    <!-- ========================================== -->
+    <!-- VISTA 1: LISTA PRINCIPAL DE TAREAS -->
+    <!-- ========================================== -->
+    <section id="view-list" class="page-view active">
+      
+      <!-- Barra Superior de Filtros y Acciones -->
+      <div class="theme-card p-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+          
+          <!-- Buscador -->
+          <div class="md:col-span-4 relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 opacity-50"></i>
+            <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Buscar tareas..." class="theme-input w-full pl-9 pr-3 py-2 text-sm">
+          </div>
+
+          <!-- Filtro por Asignatura -->
+          <div class="md:col-span-3">
+            <select id="filterSubject" onchange="applyFilters()" class="theme-input w-full px-3 py-2 text-sm">
+              <option value="ALL">Todas las Asignaturas</option>
+              <option value="Programación">Programación</option>
+              <option value="Bases de Datos">Bases de Datos</option>
+              <option value="Entornos de Desarrollo">Entornos de Desarrollo</option>
+              <option value="Lenguajes de Marcas">Lenguajes de Marcas</option>
+              <option value="Sistemas Informáticos">Sistemas Informáticos</option>
+              <option value="Matemáticas">Matemáticas</option>
+              <option value="Inglés">Inglés</option>
+              <option value="Otras">Otras</option>
+            </select>
+          </div>
+
+          <!-- Filtro por Estado -->
+          <div class="md:col-span-3">
+            <select id="filterStatus" onchange="applyFilters()" class="theme-input w-full px-3 py-2 text-sm">
+              <option value="ALL">Todos los Estados</option>
+              <option value="PENDING">Pendientes</option>
+              <option value="COMPLETED">Completadas</option>
+            </select>
+          </div>
+
+          <!-- Botón Añadir Rápido -->
+          <div class="md:col-span-2 flex justify-end">
+            <button onclick="openModalQuickAdd()" class="theme-btn-primary w-full py-2 px-3 text-sm font-semibold flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-plus"></i>
+              <span>Nueva Tarea</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen Estadístico Rápido -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="theme-card p-4 text-center">
+          <span class="text-xs uppercase tracking-wider opacity-70 block font-semibold">Total Tareas</span>
+          <span id="stat-total" class="text-2xl font-bold">0</span>
+        </div>
+        <div class="theme-card p-4 text-center">
+          <span class="text-xs uppercase tracking-wider opacity-70 block font-semibold">Pendientes</span>
+          <span id="stat-pending" class="text-2xl font-bold text-amber-500">0</span>
+        </div>
+        <div class="theme-card p-4 text-center">
+          <span class="text-xs uppercase tracking-wider opacity-70 block font-semibold">Completadas</span>
+          <span id="stat-completed" class="text-2xl font-bold text-emerald-500">0</span>
+        </div>
+        <div class="theme-card p-4 text-center">
+          <span class="text-xs uppercase tracking-wider opacity-70 block font-semibold">Urgentes</span>
+          <span id="stat-urgent" class="text-2xl font-bold text-rose-500">0</span>
+        </div>
+      </div>
+
+      <!-- Lista / Grid de Tareas -->
+      <div id="taskListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Las tarjetas de tareas se renderizarán dinámicamente aquí -->
+      </div>
+
+      <!-- Estado Vacante / Sin Tareas -->
+      <div id="emptyState" class="hidden theme-card p-12 text-center my-8">
+        <div class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center opacity-40" style="background-color: var(--primary-light)">
+          <i class="fa-solid fa-folder-open text-4xl" style="color: var(--primary)"></i>
+        </div>
+        <h3 class="text-lg font-bold mb-1">No hay tareas que mostrar</h3>
+        <p class="text-sm opacity-70 max-w-md mx-auto mb-6">Parece que no hay deberes o tareas registradas en este momento para los filtros seleccionados.</p>
+        <button onclick="openModalQuickAdd()" class="theme-btn-primary px-4 py-2 text-sm font-semibold inline-flex items-center space-x-2">
+          <i class="fa-solid fa-plus"></i>
+          <span>Crear mi primera tarea</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VISTA 2: NAVEGACIÓN A PÁGINA DE EDICIÓN   -->
+    <!-- ========================================== -->
+    <section id="view-edit" class="page-view max-w-3xl mx-auto">
+      <div class="theme-card overflow-hidden">
+        <!-- Encabezado de la Sub-Página de Edición -->
+        <div class="p-5 border-b flex items-center justify-between" style="border-color: var(--border-color)">
+          <div class="flex items-center space-x-3">
+            <button onclick="navigateTo('list')" class="p-2 rounded-lg hover:opacity-80 transition-opacity" style="background-color: var(--primary-light)">
+              <i class="fa-solid fa-arrow-left" style="color: var(--primary)"></i>
+            </button>
+            <div>
+              <h2 id="editPageTitle" class="text-xl font-bold">Editar Tarea</h2>
+              <p class="text-xs opacity-75">Modifica los detalles académicos del elemento seleccionado</p>
+            </div>
+          </div>
+          <span class="text-xs px-2.5 py-1 rounded-full font-mono border" style="border-color: var(--border-color)">Modo Edición</span>
+        </div>
+
+        <!-- Formulario Completo de Edición -->
+        <form id="editTaskForm" onsubmit="saveEditedTask(event)" class="p-6 space-y-6">
+          <input type="hidden" id="editTaskId">
+
+          <!-- Nombre / Título de la Tarea -->
+          <div>
+            <label for="editTitle" class="block text-sm font-semibold mb-2">Nombre o Título de la Tarea *</label>
+            <input type="text" id="editTitle" required placeholder="Ej: Ejercicios de Bucles While y For" class="theme-input w-full px-4 py-2.5 text-sm">
+          </div>
+
+          <!-- Asignatura y Prioridad en Dos Columnas -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="editSubject" class="block text-sm font-semibold mb-2">Asignatura *</label>
+              <select id="editSubject" required class="theme-input w-full px-4 py-2.5 text-sm">
+                <option value="Programación font-medium">Programación</option>
+                <option value="Bases de Datos">Bases de Datos</option>
+                <option value="Entornos de Desarrollo">Entornos de Desarrollo</option>
+                <option value="Lenguajes de Marcas">Lenguajes de Marcas</option>
+                <option value="Sistemas Informáticos">Sistemas Informáticos</option>
+                <option value="Matemáticas">Matemáticas</option>
+                <option value="Inglés">Inglés</option>
+                <option value="Otras">Otras</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="editPriority" class="block text-sm font-semibold mb-2">Nivel de Prioridad *</label>
+              <select id="editPriority" required class="theme-input w-full px-4 py-2.5 text-sm">
+                <option value="Baja">🟢 Baja</option>
+                <option value="Media">🟡 Media</option>
+                <option value="Alta">🔴 Alta</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Fecha Límite y Estado -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="editDueDate" class="block text-sm font-semibold mb-2">Fecha Límite de Entrega *</label>
+              <input type="date" id="editDueDate" required class="theme-input w-full px-4 py-2.5 text-sm">
+            </div>
+
+            <div>
+              <label for="editStatus" class="block text-sm font-semibold mb-2">Estado de Ejecución</label>
+              <select id="editStatus" class="theme-input w-full px-4 py-2.5 text-sm">
+                <option value="PENDING font-medium">⏳ Pendiente</option>
+                <option value="COMPLETED">✅ Completada</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Notas y Descripción Detallada -->
+          <div>
+            <label for="editNotes" class="block text-sm font-semibold mb-2">Notas / Descripción Detallada</label>
+            <textarea id="editNotes" rows="4" placeholder="Especificaciones de la entrega, enlaces o requisitos del profesor..." class="theme-input w-full px-4 py-2.5 text-sm"></textarea>
+          </div>
+
+          <!-- Botones de Acción -->
+          <div class="flex items-center justify-end space-x-3 pt-4 border-t" style="border-color: var(--border-color)">
+            <button type="button" onclick="navigateTo('list')" class="px-5 py-2.5 rounded-lg text-sm font-medium border hover:opacity-80 transition-opacity" style="border-color: var(--border-color)">
+              Cancelar
+            </button>
+            <button type="submit" class="theme-btn-primary px-6 py-2.5 text-sm font-semibold flex items-center space-x-2">
+              <i class="fa-solid fa-floppy-disk"></i>
+              <span>Guardar Cambios</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL DE CREACIÓN RÁPIDA DE TAREAS        -->
+  <!-- ========================================== -->
+  <div id="quickAddModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div class="theme-card w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div class="p-4 border-b flex items-center justify-between" style="border-color: var(--border-color)">
+        <h3 class="font-bold text-lg flex items-center gap-2">
+          <i class="fa-solid fa-plus-circle" style="color: var(--primary)"></i> Nueva Tarea
+        </h3>
+        <button onclick="closeModalQuickAdd()" class="text-sm opacity-60 hover:opacity-100 p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form id="quickAddForm" onsubmit="saveQuickTask(event)" class="p-5 space-y-4">
+        <div>
+          <label for="quickTitle" class="block text-xs font-bold uppercase tracking-wider mb-1">Título de la Tarea *</label>
+          <input type="text" id="quickTitle" required placeholder="Ej: Resumen Tema 3" class="theme-input w-full px-3 py-2 text-sm">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="quickSubject" class="block text-xs font-bold uppercase tracking-wider mb-1">Asignatura *</label>
+            <select id="quickSubject" required class="theme-input w-full px-3 py-2 text-sm">
+              <option value="Programación">Programación</option>
+              <option value="Bases de Datos">Bases de Datos</option>
+              <option value="Entornos de Desarrollo">Entornos de Desarrollo</option>
+              <option value="Lenguajes de Marcas">Lenguajes de Marcas</option>
+              <option value="Sistemas Informáticos">Sistemas Informáticos</option>
+              <option value="Matemáticas">Matemáticas</option>
+              <option value="Inglés">Inglés</option>
+              <option value="Otras">Otras</option>
+            </select>
+          </div>
+          <div>
+            <label for="quickPriority" class="block text-xs font-bold uppercase tracking-wider mb-1">Prioridad *</label>
+            <select id="quickPriority" required class="theme-input w-full px-3 py-2 text-sm">
+              <option value="Baja">🟢 Baja</option>
+              <option value="Media" selected>🟡 Media</option>
+              <option value="Alta">🔴 Alta</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label for="quickDueDate" class="block text-xs font-bold uppercase tracking-wider mb-1">Fecha Límite *</label>
+          <input type="date" id="quickDueDate" required class="theme-input w-full px-3 py-2 text-sm">
+        </div>
+
+        <div>
+          <label for="quickNotes" class="block text-xs font-bold uppercase tracking-wider mb-1">Notas Cortas</label>
+          <textarea id="quickNotes" rows="2" placeholder="Detalles opcionales..." class="theme-input w-full px-3 py-2 text-sm"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end space-x-2 pt-3 border-t" style="border-color: var(--border-color)">
+          <button type="button" onclick="closeModalQuickAdd()" class="px-3 py-1.5 text-sm font-medium rounded border hover:opacity-80" style="border-color: var(--border-color)">
+            Cancelar
+          </button>
+          <button type="submit" class="theme-btn-primary px-4 py-1.5 text-sm font-semibold">
+            Guardar Tarea
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- NOTIFICACIÓN TOAST TOAST -->
+  <div id="toast" class="fixed bottom-4 right-4 z-50 hidden theme-card px-4 py-3 shadow-lg flex items-center space-x-3 border-l-4" style="border-left-color: var(--primary)">
+    <i id="toastIcon" class="fa-solid fa-circle-check text-lg" style="color: var(--primary)"></i>
+    <span id="toastMessage" class="text-sm font-medium">Operación realizada con éxito</span>
+  </div>
+
+  <!-- LÓGICA JAVASCRIPT -->
+  <script>
+    // --- DATOS INICIALES DE EJEMPLO NEUTROS ---
+    const DEFAULT_TASKS = [
+      {
+        id: "task-1",
+        title: "Práctica de Consultas SQL Complejas",
+        subject: "Bases de Datos",
+        dueDate: getRelativeDate(2), // En 2 días
+        priority: "Alta",
+        status: "PENDING",
+        notes: "Realizar los ejercicios 1 al 15 del Tema 4 sobre JOINs y subconsultas."
+      },
+      {
+        id: "task-2",
+        title: "Implementación de Algoritmo de Búsqueda",
+        subject: "Programación",
+        dueDate: getRelativeDate(5),
+        priority: "Media",
+        status: "PENDING",
+        notes: "Crear un programa Java con búsqueda binaria y ordenación QuickSort."
+      },
+      {
+        id: "task-3",
+        title: "Lectura Capítulos 3 y 4 del Manual",
+        subject: "Sistemas Informáticos",
+        dueDate: getRelativeDate(-1), // Vencida ayer
+        priority: "Baja",
+        status: "PENDING",
+        notes: "Repasar la configuración de permisos en Linux (chmod, chown)."
+      },
+      {
+        id: "task-4",
+        title: "Maquetación HTML5/CSS Grid",
+        subject: "Lenguajes de Marcas",
+        dueDate: getRelativeDate(0), // Hoy
+        priority: "Alta",
+        status: "COMPLETED",
+        notes: "Entregar repositorio con el layout responsive de la revista digital."
+      }
+    ];
+
+    let tasks = [];
+
+    // Utilidad para fechas relativas en formato YYYY-MM-DD
+    function getRelativeDate(daysOffset) {
+      const d = new Date();
+      d.setDate(d.getDate() + daysOffset);
+      return d.toISOString().split('T')[0];
+    }
+
+    // --- INICIALIZACIÓN ---
+    window.onload = function() {
+      // Cargar Tema Guardado
+      const savedTheme = localStorage.getItem('agenda_theme') || 'classic';
+      changeTheme(savedTheme);
+      document.getElementById('themeSelector').value = savedTheme;
+
+      // Cargar Tareas de localStorage
+      const storedTasks = localStorage.getItem('agenda_tasks');
+      if (storedTasks) {
+        try {
+          tasks = JSON.parse(storedTasks);
+        } catch (e) {
+          tasks = [...DEFAULT_TASKS];
+        }
+      } else {
+        tasks = [...DEFAULT_TASKS];
+        saveTasksToStorage();
+      }
+
+      // Establecer fecha de hoy por defecto en formulario rápido
+      document.getElementById('quickDueDate').value = getRelativeDate(1);
+
+      renderTasks();
+    };
+
+    // --- MANEJO DE TEMAS VISUALES ---
+    function changeTheme(themeName) {
+      document.documentElement.setAttribute('data-theme', themeName);
+      localStorage.setItem('agenda_theme', themeName);
+    }
+
+    // --- ALMACENAMIENTO ---
+    function saveTasksToStorage() {
+      localStorage.setItem('agenda_tasks', JSON.stringify(tasks));
+    }
+
+    // --- NAVEGACIÓN ESTILO MULTI-PAGE ---
+    function navigateTo(viewName, taskId = null) {
+      const views = document.querySelectorAll('.page-view');
+      views.forEach(v => v.classList.remove('active'));
+
+      if (viewName === 'edit' && taskId) {
+        const task = tasks.find(t => t.id === taskId);
+        if (task) {
+          populateEditForm(task);
+          document.getElementById('view-edit').classList.add('active');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      } else {
+        document.getElementById('view-list').classList.add('active');
+        renderTasks();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    // --- RENDERIZADO DE LA LISTA DE TAREAS ---
+    function renderTasks() {
+      const container = document.getElementById('taskListContainer');
+      const emptyState = document.getElementById('emptyState');
+
+      const searchVal = document.getElementById('searchInput').value.toLowerCase();
+      const subjectVal = document.getElementById('filterSubject').value;
+      const statusVal = document.getElementById('filterStatus').value;
+
+      // Filtrado
+      const filtered = tasks.filter(task => {
+        const matchesSearch = task.title.toLowerCase().includes(searchVal) || 
+                              task.notes.toLowerCase().includes(searchVal) ||
+                              task.subject.toLowerCase().includes(searchVal);
+        const matchesSubject = subjectVal === 'ALL' || task.subject === subjectVal;
+        const matchesStatus = statusVal === 'ALL' || task.status === statusVal;
+
+        return matchesSearch && matchesSubject && matchesStatus;
+      });
+
+      // Actualizar estadísticas
+      updateStats();
+
+      if (filtered.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+
+      const todayStr = getRelativeDate(0);
+
+      container.innerHTML = filtered.map(task => {
+        const isCompleted = task.status === 'COMPLETED';
+        const isOverdue = !isCompleted && task.dueDate < todayStr;
+        const isDueToday = !isCompleted && task.dueDate === todayStr;
+
+        // Estilos según prioridad
+        let priorityBadge = '';
+        if (task.priority === 'Alta') {
+          priorityBadge = `<span class="px-2 py-0.5 text-xs rounded font-bold bg-rose-500/15 text-rose-500 border border-rose-500/30">🔴 Alta</span>`;
+        } else if (task.priority === 'Media') {
+          priorityBadge = `<span class="px-2 py-0.5 text-xs rounded font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">🟡 Media</span>`;
+        } else {
+          priorityBadge = `<span class="px-2 py-0.5 text-xs rounded font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30">🟢 Baja</span>`;
+        }
+
+        // Estado fecha
+        let dateBadge = `<span class="text-xs opacity-75"><i class="fa-regular fa-calendar mr-1"></i>${formatDate(task.dueDate)}</span>`;
+        if (isOverdue) {
+          dateBadge = `<span class="text-xs font-bold text-rose-500"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Vencida (${formatDate(task.dueDate)})</span>`;
+        } else if (isDueToday) {
+          dateBadge = `<span class="text-xs font-bold text-amber-500"><i class="fa-solid fa-clock mr-1"></i>¡Vence Hoy!</span>`;
+        }
+
+        return `
+          <div class="theme-card p-5 flex flex-col justify-between relative group ${isCompleted ? 'opacity-70' : ''}">
+            <div>
+              <!-- Cabecera Tarjeta: Asignatura y Prioridad -->
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider" style="background-color: var(--primary-light); color: var(--primary)">
+                  ${escapeHtml(task.subject)}
+                </span>
+                ${priorityBadge}
+              </div>
+
+              <!-- Título de la Tarea -->
+              <h3 class="font-bold text-base mb-2 ${isCompleted ? 'line-through opacity-75' : ''}">
+                ${escapeHtml(task.title)}
+              </h3>
+
+              <!-- Notas / Descripción corta -->
+              ${task.notes ? `<p class="text-xs opacity-80 mb-4 line-clamp-3 leading-relaxed">${escapeHtml(task.notes)}</p>` : ''}
+            </div>
+
+            <div>
+              <!-- Pie Tarjeta: Fecha y Acciones -->
+              <div class="pt-3 border-t flex items-center justify-between mt-2" style="border-color: var(--border-color)">
+                <div>${dateBadge}</div>
+
+                <div class="flex items-center space-x-1">
+                  <!-- Botón Completar -->
+                  <button onclick="toggleTaskStatus('${task.id}')" title="${isCompleted ? 'Marcar como pendiente' : 'Marcar como completada'}" 
+                          class="p-2 text-sm rounded hover:bg-black/5 transition-colors">
+                    <i class="fa-solid ${isCompleted ? 'fa-rotate-left text-amber-500' : 'fa-circle-check text-emerald-500'}"></i>
+                  </button>
+
+                  <!-- Botón Editar (Navega a la Vista 2) -->
+                  <button onclick="navigateTo('edit', '${task.id}')" title="Editar en página completa" 
+                          class="p-2 text-sm rounded hover:bg-black/5 transition-colors" style="color: var(--primary)">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </button>
+
+                  <!-- Botón Borrar -->
+                  <button onclick="deleteTask('${task.id}')" title="Borrar tarea" 
+                          class="p-2 text-sm rounded hover:bg-black/5 transition-colors text-rose-500">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- ACCIONES DE TAREAS ---
+    function toggleTaskStatus(id) {
+      const task = tasks.find(t => t.id === id);
+      if (task) {
+        task.status = task.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
+        saveTasksToStorage();
+        renderTasks();
+        showToast(task.status === 'COMPLETED' ? 'Tarea marcada como completada' : 'Tarea marcada como pendiente');
+      }
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(t => t.id !== id);
+      saveTasksToStorage();
+      renderTasks();
+      showToast('Tarea eliminada correctamente');
+    }
+
+    // --- EDICIÓN EN SUB-PÁGINA ---
+    function populateEditForm(task) {
+      document.getElementById('editTaskId').value = task.id;
+      document.getElementById('editTitle').value = task.title;
+      document.getElementById('editSubject').value = task.subject;
+      document.getElementById('editPriority').value = task.priority;
+      document.getElementById('editDueDate').value = task.dueDate;
+      document.getElementById('editStatus').value = task.status;
+      document.getElementById('editNotes').value = task.notes || '';
+    }
+
+    function saveEditedTask(event) {
+      event.preventDefault();
+      const id = document.getElementById('editTaskId').value;
+      const task = tasks.find(t => t.id === id);
+
+      if (task) {
+        task.title = document.getElementById('editTitle').value.trim();
+        task.subject = document.getElementById('editSubject').value;
+        task.priority = document.getElementById('editPriority').value;
+        task.dueDate = document.getElementById('editDueDate').value;
+        task.status = document.getElementById('editStatus').value;
+        task.notes = document.getElementById('editNotes').value.trim();
+
+        saveTasksToStorage();
+        showToast('Cambios guardados correctamente');
+        navigateTo('list');
+      }
+    }
+
+    // --- CREACIÓN RÁPIDA (MODAL) ---
+    function openModalQuickAdd() {
+      document.getElementById('quickAddModal').classList.remove('hidden');
+    }
+
+    function closeModalQuickAdd() {
+      document.getElementById('quickAddModal').classList.add('hidden');
+      document.getElementById('quickAddForm').reset();
+    }
+
+    function saveQuickTask(event) {
+      event.preventDefault();
+      const newTask = {
+        id: 'task-' + Date.now(),
+        title: document.getElementById('quickTitle').value.trim(),
+        subject: document.getElementById('quickSubject').value,
+        priority: document.getElementById('quickPriority').value,
+        dueDate: document.getElementById('quickDueDate').value,
+        status: 'PENDING',
+        notes: document.getElementById('quickNotes').value.trim()
+      };
+
+      tasks.unshift(newTask);
+      saveTasksToStorage();
+      closeModalQuickAdd();
+      renderTasks();
+      showToast('Nueva tarea añadida con éxito');
+    }
+
+    // --- FILTROS Y ESTADÍSTICAS ---
+    function applyFilters() {
+      renderTasks();
+    }
+
+    function updateStats() {
+      const todayStr = getRelativeDate(0);
+      document.getElementById('stat-total').innerText = tasks.length;
+      document.getElementById('stat-pending').innerText = tasks.filter(t => t.status === 'PENDING').length;
+      document.getElementById('stat-completed').innerText = tasks.filter(t => t.status === 'COMPLETED').length;
+      document.getElementById('stat-urgent').innerText = tasks.filter(t => t.status === 'PENDING' && t.dueDate <= todayStr).length;
+    }
+
+    // --- UTILIDADES ---
+    function formatDate(dateString) {
+      if (!dateString) return '';
+      const parts = dateString.split('-');
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+      return dateString;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMessage').innerText = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
