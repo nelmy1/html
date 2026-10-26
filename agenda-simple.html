@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda de Tareas Básica</title>
+    <style>
+        /* Estilos básicos y limpios */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        /* Control de páginas/vistas */
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+
+        /* Formularios y Botones */
+        .form-group {
+            margin-bottom: 12px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 9px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button.btn-danger {
+            background-color: #e74c3c;
+        }
+        button.btn-danger:hover {
+            background-color: #c0392b;
+        }
+        button.btn-secondary {
+            background-color: #7f8c8d;
+        }
+
+        /* Elementos de la lista */
+        .task-item {
+            border-left: 5px solid #3498db;
+            background: #fafafa;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .task-info h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.1rem;
+        }
+        .task-info p {
+            margin: 2px 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .badge {
+            background: #e0e0e0;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .counter-badge {
+            float: right;
+            font-size: 0.9rem;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==========================================================================
+       VISTA 1: PÁGINA PRINCIPAL (LISTA Y NUEVA TAREA)
+       ========================================================================== -->
+    <div id="view-main" class="page active">
+        <h1>📚 Agenda de Tareas</h1>
+
+        <!-- Formulario para agregar -->
+        <div class="card">
+            <h2>Añadir Tarea <span id="task-counter" class="counter-badge">(0/20)</span></h2>
+            <form id="add-form" onsubmit="addTask(event)">
+                <div class="form-group">
+                    <label for="add-title">Título de la tarea:</label>
+                    <input type="text" id="add-title" required placeholder="Ej: Trabajo de historia">
+                </div>
+                <div class="form-group">
+                    <label for="add-subject">Asignatura:</label>
+                    <select id="add-subject" required>
+                        <option value="Matemáticas">Matemáticas</option>
+                        <option value="Historia">Historia</option>
+                        <option value="Programación">Programación</option>
+                        <option value="Inglés">Inglés</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="add-date">Fecha límite:</label>
+                    <input type="date" id="add-date" required>
+                </div>
+                <button type="submit">Guardar Tarea</button>
+            </form>
+        </div>
+
+        <!-- Filtro y Lista -->
+        <div class="card">
+            <h2>Lista de Tareas</h2>
+            <div class="form-group">
+                <label for="filter-subject">Filtrar por asignatura:</label>
+                <select id="filter-subject" onchange="renderTasks()">
+                    <option value="TODAS">Todas las asignaturas</option>
+                    <option value="Matemáticas">Matemáticas</option>
+                    <option value="Historia">Historia</option>
+                    <option value="Programación">Programación</option>
+                    <option value="Inglés">Inglés</option>
+                </select>
+            </div>
+            <div id="task-list"></div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+       VISTA 2: PÁGINA DE EDICIÓN
+       ========================================================================== -->
+    <div id="view-edit" class="page">
+        <h1>✏️ Editar Tarea</h1>
+        <div class="card">
+            <form id="edit-form" onsubmit="saveEdit(event)">
+                <input type="hidden" id="edit-id">
+                <div class="form-group">
+                    <label for="edit-title">Título de la tarea:</label>
+                    <input type="text" id="edit-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-subject">Asignatura:</label>
+                    <select id="edit-subject" required>
+                        <option value="Matemáticas">Matemáticas</option>
+                        <option value="Historia">Historia</option>
+                        <option value="Programación">Programación</option>
+                        <option value="Inglés">Inglés</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-date">Fecha límite:</label>
+                    <input type="date" id="edit-date" required>
+                </div>
+                <button type="submit">Guardar Cambios</button>
+                <button type="button" class="btn-secondary" onclick="showPage('main')">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+       LOGICA JAVASCRIPT
+       ========================================================================== -->
+    <script>
+        // Límite máximo de tareas
+        const MAX_TASKS = 20;
+
+        // Estado inicial
+        let tasks = [
+            { id: 1, title: 'Ejercicios de Álgebra', subject: 'Matemáticas', date: '2026-11-01' },
+            { id: 2, title: 'Resumen Tema 4', subject: 'Historia', date: '2026-11-03' }
+        ];
+
+        // Cambiar entre páginas (Main y Edit)
+        function showPage(pageName) {
+            document.getElementById('view-main').classList.remove('active');
+            document.getElementById('view-edit').classList.remove('active');
+
+            if (pageName === 'main') {
+                document.getElementById('view-main').classList.add('active');
+            } else if (pageName === 'edit') {
+                document.getElementById('view-edit').classList.add('active');
+            }
+        }
+
+        // Mostrar lista de tareas
+        function renderTasks() {
+            const listElement = document.getElementById('task-list');
+            const filterValue = document.getElementById('filter-subject').value;
+            const counterElement = document.getElementById('task-counter');
+
+            // Actualizar contador
+            counterElement.textContent = `(${tasks.length}/${MAX_TASKS})`;
+
+            // Filtrar
+            const filteredTasks = tasks.filter(t => filterValue === 'TODAS' || t.subject === filterValue);
+
+            if (filteredTasks.length === 0) {
+                listElement.innerHTML = '<p style="color:#777;">No hay tareas para mostrar.</p>';
+                return;
+            }
+
+            listElement.innerHTML = filteredTasks.map(t => `
+                <div class="task-item">
+                    <div class="task-info">
+                        <h3>${t.title}</h3>
+                        <p><span class="badge">${t.subject}</span> — Fecha: ${t.date}</p>
+                    </div>
+                    <div>
+                        <button onclick="openEdit(${t.id})">Editar</button>
+                        <button class="btn-danger" onclick="deleteTask(${t.id})">Borrar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 1. Añadir Tarea (con restricción de 20 máximo)
+        function addTask(event) {
+            event.preventDefault();
+
+            if (tasks.length >= MAX_TASKS) {
+                alert(`Límite alcanzado: No puedes crear más de ${MAX_TASKS} tareas en total.`);
+                return;
+            }
+
+            const title = document.getElementById('add-title').value;
+            const subject = document.getElementById('add-subject').value;
+            const date = document.getElementById('add-date').value;
+
+            const newTask = {
+                id: Date.now(),
+                title: title,
+                subject: subject,
+                date: date
+            };
+
+            tasks.push(newTask);
+            document.getElementById('add-form').reset();
+            renderTasks();
+        }
+
+        // 2. Abrir Vista de Edición
+        function openEdit(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+
+            document.getElementById('edit-id').value = task.id;
+            document.getElementById('edit-title').value = task.title;
+            document.getElementById('edit-subject').value = task.subject;
+            document.getElementById('edit-date').value = task.date;
+
+            showPage('edit');
+        }
+
+        // 3. Guardar Edición
+        function saveEdit(event) {
+            event.preventDefault();
+            const id = Number(document.getElementById('edit-id').value);
+
+            const taskIndex = tasks.findIndex(t => t.id === id);
+            if (taskIndex !== -1) {
+                tasks[taskIndex].title = document.getElementById('edit-title').value;
+                tasks[taskIndex].subject = document.getElementById('edit-subject').value;
+                tasks[taskIndex].date = document.getElementById('edit-date').value;
+            }
+
+            showPage('main');
+            renderTasks();
+        }
+
+        // 4. Borrar Tarea
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            renderTasks();
+        }
+
+        // Cargar tareas al inicio
+        renderTasks();
+    </script>
+</body>
+</html>
